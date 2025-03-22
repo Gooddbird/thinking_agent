@@ -1,0 +1,7 @@
+[project]
+name = "thinking_agent"
+version = "0.1.0"
+dependencies = [
+    "mcp[cli]>=1.4.1",
+    "openai>=1.66.3",
+]
