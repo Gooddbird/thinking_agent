@@ -16,7 +16,7 @@ class ThinkingAgent(ReActAgent):
         self.description = "A Smart AI Agent that can do everything."
         self.system_prompt = SYSTEM_PROMPT
         self.next_step_prompt = NEXT_STEP_PROMPT
-        self.llm = LLM("deepseek-chat", "sk-0b5b9ed3f61b487d8308151dd9ab9ef4", "https://api.deepseek.com")
+        self.llm = LLM("deepseek-chat", "", "https://api.deepseek.com")
         self.tools= []
         self.tool_mcp_clients = {}
         self.tool_choices = ToolChoice.AUTO
