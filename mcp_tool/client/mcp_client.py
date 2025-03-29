@@ -1,9 +1,11 @@
 import asyncio
+import sys
 import json
 from contextlib import AsyncExitStack
 from enum import Enum
 from typing import Optional, List
 
+import mcp.client.stdio
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import Tool as MCPTool
@@ -17,6 +19,7 @@ from config.config import g_mcp_server_config
 UVX_PATH = "C:\\Users\\Administrator\\.local\\bin\\uvx.exe"
 NPX_PATH = "E:\\Node\\npx.cmd"
 
+sys.path.append(" E:\\ai_workspace\\thinking_agent")
 
 class McpServerType(str, Enum):
     PYTHON_MCP_SERVER = "python_mcp_server"
@@ -62,10 +65,15 @@ class McpClient:
             raise RuntimeError("mcp server config is invalid")
 
         command = UVX_PATH if self.config.get("commend") == "uvx" else NPX_PATH
+        default_env = mcp.client.stdio.get_default_environment()
+        input_env = {}
+        if self.config.get("env") is not None:
+            input_env = self.config.get("env")
+        env =  {**default_env, **input_env}
         server_params = StdioServerParameters(
             command=command,
             args=self.config.get("args", []),
-            env=None,
+            env=env,
         )
 
         stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
@@ -91,9 +99,22 @@ class McpClient:
 
 
 async def main():
-    client = McpClient("filesystem")
+    client = McpClient("playwright")
     try:
         await client.connect_to_server()
+        result = await client.session.call_tool('browser_navigate', {"url": "https://www.baidu.com"})
+
+        screenshot = await client.session.call_tool('browser_screenshot', {})
+        logger.info(screenshot)
+
+        # snap = await client.session.call_tool('browser_click', {"ref": "s1e13", "element": "link"})
+        # logger.info(snap)
+        #
+        # snap = await client.session.call_tool('browser_go_forward', {})
+        # logger.info(snap)
+        #
+        wait = await client.session.call_tool('browser_wait', {"time": 10})
+
     finally:
         await client.cleanup()
 

@@ -1,11 +1,11 @@
 import asyncio
 
-from agent.thinking_agent import ThinkingAgent
+from agent.step_thinking_agent import StepThinkingAgent
 from base.logger import logger
 
 
 async def main():
-    agent = ThinkingAgent()
+    agent = StepThinkingAgent()
     try:
         await agent.init_tool()
 
@@ -19,6 +19,12 @@ async def main():
         logger.info("Request processing completed.")
     except KeyboardInterrupt:
         logger.warning("Operation interrupted.")
+    except Exception as e:
+        logger.error("agent exception occurred.")
+        logger.exception(e)
+    finally:
+        await agent.cleanup()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

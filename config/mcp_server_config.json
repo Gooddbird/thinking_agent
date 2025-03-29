@@ -15,8 +15,14 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>"
       }
     },
-    "postgres": {
+    "playwright": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
+      "args": [
+        "-y", "@playwright/mcp@latest", "--vision"
+      ],
+      "env": {
+        "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      }
     }
+
 }

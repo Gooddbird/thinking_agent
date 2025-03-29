@@ -8,7 +8,7 @@ from base.schema import AgentState, Message, Memory, ROLE_TYPE
 
 class ReActAgent(ABC):
     def __init__(self):
-        self.max_step = 5
+        self.max_step = 15
         self.current_step = 0
         self.state = AgentState.FREE
         self.memory = Memory()

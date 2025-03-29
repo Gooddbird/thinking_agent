@@ -22,7 +22,7 @@ class LLM:
         for message in user_messages:
             formatted_messages.append(message.to_dict())
 
-        logger.info("messages: {}".format(formatted_messages))
+        logger.info("llm messages: {}".format(formatted_messages))
         logger.info("tools: {}".format(tools))
 
         params = {
