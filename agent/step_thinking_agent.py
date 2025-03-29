@@ -26,7 +26,6 @@ class StepThinkingAgent(ReActAgent):
         self.description = "A Smart AI Agent that can do everything."
         self.system_prompt = SYSTEM_PROMPT
         self.next_step_prompt = NEXT_STEP_PROMPT
-        self.api_key = os.getenv("DK_API_KEY")
         self.llm = LLM("deepseek-chat", os.getenv("DK_API_KEY"), "https://api.deepseek.com")
         self.tools= []
         self.tool_mcp_clients = {}

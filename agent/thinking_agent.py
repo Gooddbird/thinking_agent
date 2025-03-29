@@ -1,3 +1,4 @@
+import os
 from agent.llm.llm import LLM
 from agent.prompt.thinking_agent_prompt import SYSTEM_PROMPT, NEXT_STEP_PROMPT
 from agent.react_agent import ReActAgent
@@ -22,7 +23,7 @@ class ThinkingAgent(ReActAgent):
         self.description = "A Smart AI Agent that can do everything."
         self.system_prompt = SYSTEM_PROMPT
         self.next_step_prompt = NEXT_STEP_PROMPT
-        self.llm = LLM("deepseek-chat", "sk-ab9f1b82327a4e9eadb4285158cf82e0", "https://api.deepseek.com")
+        self.llm = LLM("deepseek-chat", os.getenv("DK_API_KEY"), "https://api.deepseek.com")
         self.tools= []
         self.tool_mcp_clients = {}
         self.tool_choices = ToolChoice.AUTO
