@@ -1,6 +1,5 @@
-import json
-import time
 import os
+import mimetypes
 
 
 from mcp.types import CallToolResult, TextContent, ImageContent
@@ -9,7 +8,7 @@ from openai.types.chat import (
 )
 
 from agent.llm.llm import LLM
-from agent.prompt.step_prompt import SYSTEM_PROMPT, NEXT_STEP_PROMPT
+from agent.prompt.step_prompt import SYSTEM_PROMPT
 from agent.react_agent import ReActAgent
 from agent.thinking_agent import ThinkingAgent
 from base.logger import logger
@@ -17,21 +16,43 @@ from base.schema import Message, ToolChoice, AgentState
 from mcp_tool.client.mcp_client import McpClient
 from utils.image import ImageUtil
 from utils.aliyun_oss import AliYunOSSUtil
+from string import Template
+
+from utils.time_util import TimeUtil
 
 
 class StepThinkingAgent(ReActAgent):
+
     def __init__(self):
         super().__init__()
         self.name = "StepThinkingAgent"
         self.description = "A Smart AI Agent that can do everything."
-        self.system_prompt = SYSTEM_PROMPT
-        self.next_step_prompt = NEXT_STEP_PROMPT
         self.llm = LLM("deepseek-chat", os.getenv("DK_API_KEY"), "https://api.deepseek.com")
         self.tools= []
         self.tool_mcp_clients = {}
         self.tool_mcp_client_list = []
         self.tool_choices = ToolChoice.AUTO
         self.step_tool_calls = []
+        self.sys_prompt = ""
+
+
+    def init(self) -> bool:
+        self.create_work_root()
+        self.build_system_prompt()
+        return True
+
+    def build_system_prompt(self):
+        template = Template(SYSTEM_PROMPT)
+        self.sys_prompt = template.substitute(
+            request=self.request,
+            work_root_dir=self.work_root_dir
+        )
+
+    def create_work_root(self):
+        dir_name = TimeUtil.get_now_time_14_str()
+        self.work_root_dir = f"E:\\ai_workspace\\thinking_agent\\start\\{dir_name}"
+        os.makedirs(self.work_root_dir, exist_ok=True)
+        logger.info(f"Already create Work root dir: {self.work_root_dir}")
 
     async def cleanup(self):
         for mcp_client in self.tool_mcp_client_list:
@@ -62,12 +83,9 @@ class StepThinkingAgent(ReActAgent):
 
 
     async def think(self) -> bool:
-        if self.next_step_prompt and len(self.next_step_prompt) > 0:
-            user_msg = Message.user_message(self.next_step_prompt)
-            self.memory.messages += [user_msg]
         try:
             response = await self.llm.ask_tool(
-                system_messages=[Message.system_message(self.system_prompt)],
+                system_messages=[Message.system_message(self.sys_prompt)],
                 user_messages=self.memory.messages,
                 tools=self.tools
             )
@@ -156,16 +174,13 @@ class StepThinkingAgent(ReActAgent):
             if call_result and call_result.content:
                 for content in call_result.content:
                     if isinstance(content, ImageContent):
-                        file = ImageUtil.save_base64_image(content.data, str(time.time()))
-                        content.data = "please get image from url: " + AliYunOSSUtil.upload_file(file)
+                        now = TimeUtil.get_now_time_14_str()
+                        extension = mimetypes.guess_extension(content.mimeType)
+                        file_path = f"{self.work_root_dir}\\{name}_{now}{extension}"
+                        ImageUtil.save_base64_image(content.data, file_path)
+                        content.data = f"image url: {AliYunOSSUtil.upload_file(file_path)}, local_path: {file_path}"
                         logger.info(content.data)
             return call_result
-        except json.JSONDecodeError:
-            error_msg = f"Error parsing arguments for {name}: Invalid JSON format"
-            logger.error(
-                f"Oops! The arguments for '{name}' don't make sense - invalid JSON, arguments:{tool_call.function.arguments}"
-            )
-            return self.build_error_call_tool_result(f"Error: {error_msg}", True)
         except Exception as e:
             error_msg = f"Tool '{name}' encountered a problem: {str(e)}"
             logger.error(error_msg)

@@ -1,3 +1,5 @@
+import os
+import time
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 
@@ -12,6 +14,9 @@ class ReActAgent(ABC):
         self.current_step = 0
         self.state = AgentState.FREE
         self.memory = Memory()
+        self.work_root_dir = ""
+        self.request = None
+        self.initialized = False
 
     @abstractmethod
     async def think(self) -> bool:
@@ -20,6 +25,10 @@ class ReActAgent(ABC):
     @abstractmethod
     async def act(self) -> str:
         """Execute decided actions"""
+
+    @abstractmethod
+    def init(self) -> bool:
+        """init"""
 
     @asynccontextmanager
     async def state_context(self, new_state: AgentState):
@@ -86,6 +95,13 @@ class ReActAgent(ABC):
         return await self.act()
 
     async def run(self, request: Optional[str] = None) -> str:
+        if request is None:
+            raise RuntimeError("user input request empty")
+
+        self.request = request
+
+        if self.initialized is False:
+            self.initialized = self.init()
 
         if self.state != AgentState.FREE:
             raise RuntimeError("not free state")
@@ -93,8 +109,7 @@ class ReActAgent(ABC):
         if request is not None:
             self.state = AgentState.FINISHED
 
-        if request:
-            self.update_memory("user", request)
+        self.update_memory("user", request)
 
         results: List[str] = []
         async with self.state_context(AgentState.RUNNING):
@@ -113,3 +128,4 @@ class ReActAgent(ABC):
                 results.append(f"Terminated: Reached max steps ({self.max_step})")
 
         return "\n".join(results) if results else "No steps executed"
+

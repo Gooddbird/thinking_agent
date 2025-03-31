@@ -9,11 +9,10 @@ class ImageUtil:
         img.show()  # 或使用 matplotlib 显示
 
     @staticmethod
-    def save_base64_image(base64_str, file_name):
+    def save_base64_image(base64_str, file_path):
         img = Image.open(BytesIO(base64.b64decode(base64_str)))
-        full_file_name = f"E:\\ai_workspace\\thinking_agent\\start\\{file_name}.jpg"
-        img.save(full_file_name)
-        return full_file_name
+        img.save(file_path)
+        return file_path
 
     @staticmethod
     def reduce_base64_image(base64_str,

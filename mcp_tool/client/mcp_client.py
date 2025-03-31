@@ -98,25 +98,34 @@ class McpClient:
         await self.exit_stack.aclose()
 
 
-async def main():
-    client = McpClient("playwright")
+async def test_jetbrains():
+    client = McpClient("jetbrains")
     try:
         await client.connect_to_server()
-        result = await client.session.call_tool('browser_navigate', {"url": "https://www.baidu.com"})
-
-        screenshot = await client.session.call_tool('browser_screenshot', {})
-        logger.info(screenshot)
-
-        # snap = await client.session.call_tool('browser_click', {"ref": "s1e13", "element": "link"})
-        # logger.info(snap)
-        #
-        # snap = await client.session.call_tool('browser_go_forward', {})
-        # logger.info(snap)
-        #
-        wait = await client.session.call_tool('browser_wait', {"time": 10})
-
     finally:
         await client.cleanup()
+
+
+async def main():
+    await test_jetbrains()
+    # client = McpClient("playwright")
+    # try:
+    #     await client.connect_to_server()
+    #     result = await client.session.call_tool('browser_navigate', {"url": "https://www.baidu.com"})
+    #
+    #     screenshot = await client.session.call_tool('browser_screenshot', {})
+    #     logger.info(screenshot)
+    #
+    #     # snap = await client.session.call_tool('browser_click', {"ref": "s1e13", "element": "link"})
+    #     # logger.info(snap)
+    #     #
+    #     # snap = await client.session.call_tool('browser_go_forward', {})
+    #     # logger.info(snap)
+    #     #
+    #     wait = await client.session.call_tool('browser_wait', {"time": 10})
+    #
+    # finally:
+    #     await client.cleanup()
 
 
 if __name__ == "__main__":
